@@ -1,0 +1,232 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "HeatKeeper: sources",
+        "description": "All fields are optional and can be changed later.",
+        "data": {
+          "tariff_entity": "Tariff entity (optional)",
+          "tariff_cheap_states": "Tariff states meaning 'cheap'",
+          "grid_entity": "Grid presence sensor (ESP, optional)",
+          "grid_on_states": "Grid sensor states meaning 'power present'",
+          "day_toggle_entity": "Day toggle 'someone home' (optional)"
+        },
+        "data_description": {
+          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
+          "tariff_cheap_states": "Comma separated, e.g. `on` or `T2, night`.",
+          "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
+          "grid_on_states": "Comma separated, usually `on`.",
+          "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."
+        }
+      },
+      "zone": {
+        "title": "Add zone",
+        "description": "One zone = one heater plug + one temperature sensor.",
+        "data": {
+          "name": "Zone name",
+          "heater": "Heater plug",
+          "temperature": "Temperature sensor",
+          "humidity": "Humidity sensor (optional)",
+          "add_another": "Add another zone after this one"
+        }
+      }
+    },
+    "error": {
+      "name_required": "Name is required.",
+      "name_exists": "A zone with this name already exists.",
+      "heater_in_use": "This plug is already used by another zone."
+    },
+    "abort": {
+      "single_instance_allowed": "HeatKeeper is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "HeatKeeper",
+        "menu_options": {
+          "sources": "Sources (tariff, grid, day toggle)",
+          "add_zone": "Add zone",
+          "select_zone": "Edit zone",
+          "remove_zone": "Remove zones"
+        }
+      },
+      "sources": {
+        "title": "Sources",
+        "data": {
+          "tariff_entity": "Tariff entity (optional)",
+          "tariff_cheap_states": "Tariff states meaning 'cheap'",
+          "grid_entity": "Grid presence sensor (ESP, optional)",
+          "grid_on_states": "Grid sensor states meaning 'power present'",
+          "day_toggle_entity": "Day toggle 'someone home' (optional)"
+        },
+        "data_description": {
+          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
+          "tariff_cheap_states": "Comma separated, e.g. `on` or `T2, night`.",
+          "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
+          "grid_on_states": "Comma separated, usually `on`.",
+          "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."
+        }
+      },
+      "add_zone": {
+        "title": "Add zone",
+        "data": {
+          "name": "Zone name",
+          "heater": "Heater plug",
+          "temperature": "Temperature sensor",
+          "humidity": "Humidity sensor (optional)"
+        }
+      },
+      "select_zone": {
+        "title": "Edit zone",
+        "data": {
+          "zone": "Zone"
+        }
+      },
+      "edit_zone": {
+        "title": "Edit zone {zone}",
+        "data": {
+          "name": "Zone name",
+          "heater": "Heater plug",
+          "temperature": "Temperature sensor",
+          "humidity": "Humidity sensor (optional)"
+        }
+      },
+      "remove_zone": {
+        "title": "Remove zones",
+        "data": {
+          "zones": "Zones to remove"
+        }
+      }
+    },
+    "error": {
+      "name_required": "Name is required.",
+      "name_exists": "A zone with this name already exists.",
+      "heater_in_use": "This plug is already used by another zone."
+    },
+    "abort": {
+      "no_zones": "No zones configured yet."
+    }
+  },
+  "entity": {
+    "select": {
+      "mode": {
+        "name": "Mode",
+        "state": {
+          "off": "Off",
+          "maintain": "1 · Maintain temperature",
+          "tariff": "2 · Two-zone tariff",
+          "tariff_outage": "3 · Tariff + outages"
+        }
+      }
+    },
+    "number": {
+      "maintain_target": {
+        "name": "Mode 1 target"
+      },
+      "delta": {
+        "name": "Hysteresis (±)"
+      },
+      "night_target": {
+        "name": "Night target"
+      },
+      "preheat_target": {
+        "name": "Pre-morning boost target"
+      },
+      "preheat_lead": {
+        "name": "Boost before cheap zone ends"
+      },
+      "day_home_target": {
+        "name": "Day target · home"
+      },
+      "day_away_target": {
+        "name": "Day target · away"
+      },
+      "boost_target": {
+        "name": "One-shot heat target"
+      },
+      "outage_target": {
+        "name": "After-outage target (0 = skip)"
+      },
+      "restore_delay": {
+        "name": "Delay after power restore"
+      },
+      "restore_stagger": {
+        "name": "Stagger between zones"
+      },
+      "offset": {
+        "name": "Target offset"
+      }
+    },
+    "switch": {
+      "auto_restore": {
+        "name": "Auto restore after outage"
+      },
+      "enabled": {
+        "name": "Control enabled"
+      }
+    },
+    "time": {
+      "cheap_start": {
+        "name": "Cheap tariff start"
+      },
+      "cheap_end": {
+        "name": "Cheap tariff end"
+      }
+    },
+    "button": {
+      "boost": {
+        "name": "One-shot heat"
+      },
+      "boost_cancel": {
+        "name": "Cancel one-shot heat"
+      },
+      "resume": {
+        "name": "Resume heating"
+      }
+    },
+    "sensor": {
+      "status": {
+        "name": "Status",
+        "state": {
+          "off": "Off",
+          "maintain": "Maintaining",
+          "night": "Night (cheap)",
+          "preheat": "Pre-morning boost",
+          "day_home": "Day · home",
+          "day_away": "Day · away",
+          "outage": "Power outage",
+          "waiting": "Waiting after restore",
+          "paused": "Paused after outage",
+          "recovery": "Recovering"
+        }
+      },
+      "restore_at": {
+        "name": "Heating resumes at"
+      },
+      "zone_status": {
+        "name": "Status",
+        "state": {
+          "heating": "Heating",
+          "idle": "Idle",
+          "boost": "One-shot heat",
+          "off": "Off",
+          "disabled": "Disabled",
+          "no_sensor": "No sensor data",
+          "blocked": "Blocked (power)"
+        }
+      },
+      "zone_target": {
+        "name": "Target"
+      }
+    },
+    "binary_sensor": {
+      "cheap_tariff": {
+        "name": "Cheap tariff"
+      },
+      "grid": {
+        "name": "Grid power"
+      }
+    }
+  }
+}
