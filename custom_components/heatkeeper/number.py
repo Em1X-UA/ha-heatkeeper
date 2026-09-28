@@ -16,18 +16,17 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import HeatKeeperConfigEntry
 from .const import (
-    S_BOOST_TARGET,
-    S_DAY_AWAY_TARGET,
-    S_DAY_HOME_TARGET,
     S_DELTA,
-    S_MAINTAIN_TARGET,
-    S_NIGHT_TARGET,
-    S_OUTAGE_TARGET,
     S_PREHEAT_LEAD,
-    S_PREHEAT_TARGET,
     S_RESTORE_DELAY,
     S_RESTORE_STAGGER,
-    Z_OFFSET,
+    T_BOOST,
+    T_DAY_AWAY,
+    T_DAY_HOME,
+    T_MAINTAIN,
+    T_NIGHT,
+    T_OUTAGE,
+    T_PREHEAT,
 )
 from .controller import HeatKeeperController, Zone
 from .entity import HeatKeeperEntity
@@ -35,7 +34,7 @@ from .entity import HeatKeeperEntity
 
 @dataclass(frozen=True, kw_only=True)
 class HKNumberDescription(NumberEntityDescription):
-    """Number description with sane defaults for temperatures."""
+    """Number description with defaults for temperature targets."""
 
     native_min_value: float = 5
     native_max_value: float = 30
@@ -43,10 +42,10 @@ class HKNumberDescription(NumberEntityDescription):
     native_unit_of_measurement: str | None = UnitOfTemperature.CELSIUS
     device_class: NumberDeviceClass | None = NumberDeviceClass.TEMPERATURE
     mode: NumberMode = NumberMode.BOX
+    entity_category: EntityCategory | None = EntityCategory.CONFIG
 
 
 GLOBAL_NUMBERS: tuple[HKNumberDescription, ...] = (
-    HKNumberDescription(key=S_MAINTAIN_TARGET, icon="mdi:thermometer"),
     HKNumberDescription(
         key=S_DELTA,
         icon="mdi:plus-minus-variant",
@@ -55,8 +54,6 @@ GLOBAL_NUMBERS: tuple[HKNumberDescription, ...] = (
         native_step=0.1,
         device_class=None,
     ),
-    HKNumberDescription(key=S_NIGHT_TARGET, icon="mdi:weather-night"),
-    HKNumberDescription(key=S_PREHEAT_TARGET, icon="mdi:thermometer-chevron-up"),
     HKNumberDescription(
         key=S_PREHEAT_LEAD,
         icon="mdi:timer-sand",
@@ -65,12 +62,6 @@ GLOBAL_NUMBERS: tuple[HKNumberDescription, ...] = (
         native_step=5,
         native_unit_of_measurement=UnitOfTime.MINUTES,
         device_class=None,
-    ),
-    HKNumberDescription(key=S_DAY_HOME_TARGET, icon="mdi:home-thermometer"),
-    HKNumberDescription(key=S_DAY_AWAY_TARGET, icon="mdi:home-export-outline"),
-    HKNumberDescription(key=S_BOOST_TARGET, icon="mdi:fire"),
-    HKNumberDescription(
-        key=S_OUTAGE_TARGET, icon="mdi:transmission-tower", native_min_value=0
     ),
     HKNumberDescription(
         key=S_RESTORE_DELAY,
@@ -92,14 +83,14 @@ GLOBAL_NUMBERS: tuple[HKNumberDescription, ...] = (
     ),
 )
 
-ZONE_OFFSET = HKNumberDescription(
-    key=Z_OFFSET,
-    icon="mdi:thermometer-plus",
-    native_min_value=-5,
-    native_max_value=5,
-    native_step=0.5,
-    device_class=None,
-    entity_category=EntityCategory.CONFIG,
+ZONE_NUMBERS: tuple[HKNumberDescription, ...] = (
+    HKNumberDescription(key=T_MAINTAIN, icon="mdi:thermometer"),
+    HKNumberDescription(key=T_NIGHT, icon="mdi:weather-night"),
+    HKNumberDescription(key=T_PREHEAT, icon="mdi:thermometer-chevron-up"),
+    HKNumberDescription(key=T_DAY_HOME, icon="mdi:home-thermometer"),
+    HKNumberDescription(key=T_DAY_AWAY, icon="mdi:home-export-outline"),
+    HKNumberDescription(key=T_BOOST, icon="mdi:fire"),
+    HKNumberDescription(key=T_OUTAGE, icon="mdi:transmission-tower", native_min_value=0),
 )
 
 
@@ -113,9 +104,8 @@ async def async_setup_entry(
     entities: list[NumberEntity] = [
         GlobalNumber(controller, desc) for desc in GLOBAL_NUMBERS
     ]
-    entities.extend(
-        ZoneNumber(controller, ZONE_OFFSET, zone) for zone in controller.zones.values()
-    )
+    for zone in controller.zones.values():
+        entities.extend(ZoneNumber(controller, desc, zone) for desc in ZONE_NUMBERS)
     async_add_entities(entities)
 
 
@@ -144,7 +134,7 @@ class GlobalNumber(HeatKeeperEntity, NumberEntity):
 
 
 class ZoneNumber(HeatKeeperEntity, NumberEntity):
-    """A per-zone numeric setting."""
+    """A per-zone target temperature."""
 
     _platform_domain = "number"
 

@@ -7,34 +7,36 @@
         "data": {
           "tariff_entity": "Tariff entity (optional)",
           "tariff_cheap_states": "Tariff states meaning 'cheap'",
-          "grid_entity": "Grid presence sensor (ESP, optional)",
-          "grid_on_states": "Grid sensor states meaning 'power present'",
-          "day_toggle_entity": "Day toggle 'someone home' (optional)"
+          "grid_entity": "Grid presence entity (optional)",
+          "grid_on_states": "States meaning 'power present'"
         },
         "data_description": {
-          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
+          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff: start/end' times.",
           "tariff_cheap_states": "Comma separated, e.g. `offpeak` or `on`.",
-          "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
-          "grid_on_states": "Comma separated, usually `on`.",
-          "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."
+          "grid_entity": "Any entity that is on while there is power. Unavailable = no power.",
+          "grid_on_states": "Comma separated, usually `on`."
         }
       },
       "zone": {
-        "title": "Add zone",
-        "description": "One zone = one heater plug + one temperature sensor.",
+        "title": "Add room",
+        "description": "One room = one heater plug + one temperature sensor.",
         "data": {
-          "name": "Zone name",
+          "name": "Room name",
           "heater": "Heater plug",
           "temperature": "Temperature sensor",
           "humidity": "Humidity sensor (optional)",
-          "add_another": "Add another zone after this one"
+          "own_presence": "Room has an owner (own presence switch)",
+          "add_another": "Add another room after this one"
+        },
+        "data_description": {
+          "own_presence": "Otherwise the room follows 'Presence: someone home'."
         }
       }
     },
     "error": {
       "name_required": "Name is required.",
-      "name_exists": "A zone with this name already exists.",
-      "heater_in_use": "This plug is already used by another zone."
+      "name_exists": "A room with this name already exists.",
+      "heater_in_use": "This plug is already used by another room."
     },
     "abort": {
       "single_instance_allowed": "HeatKeeper is already configured."
@@ -45,10 +47,10 @@
       "init": {
         "title": "HeatKeeper",
         "menu_options": {
-          "sources": "Sources (tariff, grid, day toggle)",
-          "add_zone": "Add zone",
-          "select_zone": "Edit zone",
-          "remove_zone": "Remove zones"
+          "sources": "Sources (tariff, grid)",
+          "add_zone": "Add room",
+          "select_zone": "Edit room",
+          "remove_zone": "Remove rooms"
         }
       },
       "sources": {
@@ -56,56 +58,62 @@
         "data": {
           "tariff_entity": "Tariff entity (optional)",
           "tariff_cheap_states": "Tariff states meaning 'cheap'",
-          "grid_entity": "Grid presence sensor (ESP, optional)",
-          "grid_on_states": "Grid sensor states meaning 'power present'",
-          "day_toggle_entity": "Day toggle 'someone home' (optional)"
+          "grid_entity": "Grid presence entity (optional)",
+          "grid_on_states": "States meaning 'power present'"
         },
         "data_description": {
-          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
+          "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff: start/end' times.",
           "tariff_cheap_states": "Comma separated, e.g. `offpeak` or `on`.",
-          "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
-          "grid_on_states": "Comma separated, usually `on`.",
-          "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."
+          "grid_entity": "Any entity that is on while there is power. Unavailable = no power.",
+          "grid_on_states": "Comma separated, usually `on`."
         }
       },
       "add_zone": {
-        "title": "Add zone",
+        "title": "Add room",
         "data": {
-          "name": "Zone name",
+          "name": "Room name",
           "heater": "Heater plug",
           "temperature": "Temperature sensor",
-          "humidity": "Humidity sensor (optional)"
+          "humidity": "Humidity sensor (optional)",
+          "own_presence": "Room has an owner (own presence switch)"
+        },
+        "data_description": {
+          "own_presence": "Otherwise the room follows 'Presence: someone home'."
         }
       },
       "select_zone": {
-        "title": "Edit zone",
+        "title": "Edit room",
         "data": {
-          "zone": "Zone"
+          "zone": "Room"
         }
       },
       "edit_zone": {
-        "title": "Edit zone {zone}",
+        "title": "Edit room {zone}",
         "data": {
-          "name": "Zone name",
+          "name": "Room name",
           "heater": "Heater plug",
           "temperature": "Temperature sensor",
-          "humidity": "Humidity sensor (optional)"
+          "humidity": "Humidity sensor (optional)",
+          "own_presence": "Room has an owner (own presence switch)"
+        },
+        "data_description": {
+          "own_presence": "Otherwise the room follows 'Presence: someone home'."
         }
       },
       "remove_zone": {
-        "title": "Remove zones",
+        "title": "Remove rooms",
         "data": {
-          "zones": "Zones to remove"
+          "zones": "Rooms to remove"
         }
       }
     },
     "error": {
       "name_required": "Name is required.",
-      "name_exists": "A zone with this name already exists.",
-      "heater_in_use": "This plug is already used by another zone."
+      "name_exists": "A room with this name already exists.",
+      "heater_in_use": "This plug is already used by another room."
     },
     "abort": {
-      "no_zones": "No zones configured yet."
+      "no_zones": "No rooms configured yet."
     }
   },
   "entity": {
@@ -114,73 +122,82 @@
         "name": "Mode",
         "state": {
           "off": "Off",
-          "maintain": "1 · Maintain temperature",
-          "tariff": "2 · Two-zone tariff",
-          "tariff_outage": "3 · Tariff + outages"
+          "maintain": "Maintain temperature",
+          "tariff": "Two-zone tariff",
+          "tariff_outage": "Tariff + outages"
         }
       }
     },
     "number": {
-      "maintain_target": {
-        "name": "Mode 1 target"
-      },
       "delta": {
         "name": "Hysteresis (±)"
       },
-      "night_target": {
-        "name": "Night target"
-      },
-      "preheat_target": {
-        "name": "Pre-morning boost target"
-      },
       "preheat_lead": {
-        "name": "Boost before cheap zone ends"
-      },
-      "day_home_target": {
-        "name": "Day target · home"
-      },
-      "day_away_target": {
-        "name": "Day target · away"
-      },
-      "boost_target": {
-        "name": "One-shot heat target"
-      },
-      "outage_target": {
-        "name": "After-outage target (0 = skip)"
+        "name": "Cheap tariff: boost before end"
       },
       "restore_delay": {
-        "name": "Delay after power restore"
+        "name": "Outage: delay after power returns"
       },
       "restore_stagger": {
-        "name": "Stagger between zones"
+        "name": "Outage: stagger between rooms"
       },
-      "offset": {
-        "name": "Target offset"
+      "maintain_target": {
+        "name": "Target: maintain"
+      },
+      "night_target": {
+        "name": "Target: night"
+      },
+      "preheat_target": {
+        "name": "Target: night, pre-morning boost"
+      },
+      "day_home_target": {
+        "name": "Target: day, home"
+      },
+      "day_away_target": {
+        "name": "Target: day, away"
+      },
+      "boost_target": {
+        "name": "Target: one-shot heat"
+      },
+      "outage_target": {
+        "name": "Target: after outage (0 = skip)"
       }
     },
     "switch": {
+      "home_presence": {
+        "name": "Presence: someone home"
+      },
+      "presence_auto": {
+        "name": "Presence: auto (any room)"
+      },
+      "boost_all": {
+        "name": "One-shot heat"
+      },
       "auto_restore": {
-        "name": "Auto restore after outage"
+        "name": "Outage: auto restore"
       },
       "enabled": {
-        "name": "Control enabled"
+        "name": "Control"
+      },
+      "day_heating": {
+        "name": "Day heating"
+      },
+      "presence": {
+        "name": "Presence"
+      },
+      "boost": {
+        "name": "One-shot heat"
       }
     },
     "time": {
       "cheap_start": {
-        "name": "Cheap tariff start"
+        "name": "Cheap tariff: start"
       },
       "cheap_end": {
-        "name": "Cheap tariff end"
+        "name": "Cheap tariff: end"
       }
     },
     "button": {
-      "boost": {
-        "name": "One-shot heat"
-      },
-      "boost_cancel": {
-        "name": "Cancel one-shot heat"
-      },
       "resume": {
         "name": "Resume heating"
       }
@@ -193,8 +210,7 @@
           "maintain": "Maintaining",
           "night": "Night (cheap)",
           "preheat": "Pre-morning boost",
-          "day_home": "Day · home",
-          "day_away": "Day · away",
+          "day": "Day",
           "outage": "Power outage",
           "waiting": "Waiting after restore",
           "paused": "Paused after outage",
@@ -210,14 +226,16 @@
           "heating": "Heating",
           "idle": "Idle",
           "boost": "One-shot heat",
+          "scheduled": "Scheduled",
           "off": "Off",
+          "day_off": "No day heating",
           "disabled": "Disabled",
           "no_sensor": "No sensor data",
-          "blocked": "Blocked (power)"
+          "blocked": "No power"
         }
       },
       "zone_target": {
-        "name": "Target"
+        "name": "Current target"
       }
     },
     "binary_sensor": {

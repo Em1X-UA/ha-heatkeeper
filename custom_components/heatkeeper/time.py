@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import time
 
 from homeassistant.components.time import TimeEntity
+from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -33,6 +34,7 @@ class TariffTime(HeatKeeperEntity, TimeEntity):
     """Start or end of the cheap tariff zone."""
 
     _platform_domain = "time"
+    _attr_entity_category = EntityCategory.CONFIG
     _attr_icon = "mdi:clock-outline"
 
     @property

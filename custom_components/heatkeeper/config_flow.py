@@ -25,7 +25,6 @@ from homeassistant.helpers.selector import (
 )
 
 from .const import (
-    CONF_DAY_TOGGLE_ENTITY,
     CONF_GRID_ENTITY,
     CONF_GRID_ON_STATES,
     CONF_TARIFF_CHEAP_STATES,
@@ -34,6 +33,7 @@ from .const import (
     CONF_ZONE_HUMIDITY,
     CONF_ZONE_ID,
     CONF_ZONE_NAME,
+    CONF_ZONE_OWN_PRESENCE,
     CONF_ZONE_TEMPERATURE,
     CONF_ZONES,
     DEFAULT_GRID_ON_STATES,
@@ -48,7 +48,6 @@ SOURCE_KEYS = (
     CONF_TARIFF_CHEAP_STATES,
     CONF_GRID_ENTITY,
     CONF_GRID_ON_STATES,
-    CONF_DAY_TOGGLE_ENTITY,
 )
 ZONE_KEYS = (CONF_ZONE_NAME, CONF_ZONE_HEATER, CONF_ZONE_TEMPERATURE, CONF_ZONE_HUMIDITY)
 
@@ -80,12 +79,6 @@ def _sources_schema(values: dict[str, Any]) -> vol.Schema:
                 CONF_GRID_ON_STATES,
                 default=values.get(CONF_GRID_ON_STATES, DEFAULT_GRID_ON_STATES),
             ): TextSelector(),
-            vol.Optional(
-                CONF_DAY_TOGGLE_ENTITY,
-                description=_suggested(values, CONF_DAY_TOGGLE_ENTITY),
-            ): EntitySelector(
-                EntitySelectorConfig(domain=["input_boolean", "switch", "binary_sensor"])
-            ),
         }
     )
 
@@ -106,6 +99,9 @@ def _zone_schema(values: dict[str, Any], add_another: bool) -> vol.Schema:
         vol.Optional(
             CONF_ZONE_HUMIDITY, description=_suggested(values, CONF_ZONE_HUMIDITY)
         ): EntitySelector(EntitySelectorConfig(domain="sensor", device_class="humidity")),
+        vol.Optional(
+            CONF_ZONE_OWN_PRESENCE, default=values.get(CONF_ZONE_OWN_PRESENCE, True)
+        ): BooleanSelector(),
     }
     if add_another:
         schema[vol.Optional(CONF_ADD_ANOTHER, default=False)] = BooleanSelector()
@@ -130,6 +126,7 @@ def _validate_zone(
 def _zone_from_input(user_input: dict[str, Any], zone_id: str) -> dict[str, Any]:
     zone = {key: user_input[key] for key in ZONE_KEYS if user_input.get(key)}
     zone[CONF_ZONE_NAME] = zone[CONF_ZONE_NAME].strip()
+    zone[CONF_ZONE_OWN_PRESENCE] = bool(user_input.get(CONF_ZONE_OWN_PRESENCE, True))
     zone[CONF_ZONE_ID] = zone_id
     return zone
 

@@ -42,13 +42,17 @@ class HeatKeeperEntity(Entity):
     _platform_domain: str
 
     def __init__(
-        self, controller: HeatKeeperController, key: str, zone: Zone | None = None
+        self,
+        controller: HeatKeeperController,
+        key: str,
+        zone: Zone | None = None,
+        translation_key: str | None = None,
     ) -> None:
         """Initialize the entity."""
         self._controller = controller
         self._zone = zone
         self._key = key
-        self._attr_translation_key = key
+        self._attr_translation_key = translation_key or key
         entry_id = controller.entry.entry_id
         if zone is None:
             self._attr_unique_id = f"{entry_id}_{key}"
@@ -60,9 +64,14 @@ class HeatKeeperEntity(Entity):
             object_id = f"heatkeeper_{zone.slug}_{key}"
         # Stable, language-independent entity ids so dashboards are portable.
         self.entity_id = f"{self._platform_domain}.{object_id}"
+        controller.unique_ids.add((self._platform_domain, self._attr_unique_id))
 
     async def async_added_to_hass(self) -> None:
         """Subscribe to controller updates."""
+        if self._zone is not None:
+            self._zone.entity_ids[f"{self._platform_domain}.{self._key}"] = (
+                self.entity_id
+            )
         self.async_on_remove(
             async_dispatcher_connect(
                 self.hass, self._controller.signal, self.async_write_ha_state

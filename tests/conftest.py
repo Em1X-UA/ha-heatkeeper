@@ -10,11 +10,11 @@ from pytest_homeassistant_custom_component.common import (
 )
 
 from custom_components.heatkeeper.const import (
-    CONF_DAY_TOGGLE_ENTITY,
     CONF_GRID_ENTITY,
     CONF_ZONE_HEATER,
     CONF_ZONE_ID,
     CONF_ZONE_NAME,
+    CONF_ZONE_OWN_PRESENCE,
     CONF_ZONE_TEMPERATURE,
     CONF_ZONES,
     DOMAIN,
@@ -28,8 +28,20 @@ def auto_enable_custom_integrations(enable_custom_integrations):
 
 
 ZONES = [
-    {CONF_ZONE_ID: "z1", CONF_ZONE_NAME: "Room", CONF_ZONE_HEATER: "input_boolean.h1", CONF_ZONE_TEMPERATURE: "sensor.t1"},
-    {CONF_ZONE_ID: "z2", CONF_ZONE_NAME: "Kitchen", CONF_ZONE_HEATER: "input_boolean.h2", CONF_ZONE_TEMPERATURE: "sensor.t2"},
+    {
+        CONF_ZONE_ID: "z1",
+        CONF_ZONE_NAME: "Room",
+        CONF_ZONE_HEATER: "input_boolean.h1",
+        CONF_ZONE_TEMPERATURE: "sensor.t1",
+        CONF_ZONE_OWN_PRESENCE: True,
+    },
+    {
+        CONF_ZONE_ID: "z2",
+        CONF_ZONE_NAME: "Kitchen",
+        CONF_ZONE_HEATER: "input_boolean.h2",
+        CONF_ZONE_TEMPERATURE: "sensor.t2",
+        CONF_ZONE_OWN_PRESENCE: False,
+    },
 ]
 
 
@@ -49,7 +61,6 @@ async def entry(hass: HomeAssistant) -> MockConfigEntry:
     hass.states.async_set("sensor.t1", "20.0")
     hass.states.async_set("sensor.t2", "20.0")
     hass.states.async_set("binary_sensor.grid", "on")
-    hass.states.async_set("input_boolean.home", "on")
     entry = MockConfigEntry(
         domain=DOMAIN,
         title="HeatKeeper",
@@ -57,7 +68,6 @@ async def entry(hass: HomeAssistant) -> MockConfigEntry:
         options={
             CONF_ZONES: ZONES,
             CONF_GRID_ENTITY: "binary_sensor.grid",
-            CONF_DAY_TOGGLE_ENTITY: "input_boolean.home",
         },
     )
     entry.add_to_hass(hass)
