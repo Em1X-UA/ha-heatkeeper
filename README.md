@@ -12,8 +12,6 @@
 2. Знайдіть **HeatKeeper** у HACS, встановіть і перезапустіть Home Assistant.
 3. **Налаштування → Пристрої та служби → Додати інтеграцію → HeatKeeper**.
 
-> Репозиторій має бути публічним: HACS не встановлює з приватних.
-
 ## Налаштування
 
 **Джерела даних** (усі поля необовʼязкові; змінюються через **HeatKeeper → Налаштувати**):
@@ -154,11 +152,6 @@ automation:
         target:
           entity_id: switch.heatkeeper_spalnia_boost
 ```
-
-## Іконка
-
-Іконка лежить у `custom_components/heatkeeper/brand/`. Нові версії Home Assistant підхоплюють її
-без офіційного репозиторію `home-assistant/brands`.
 
 ## Безпека
 
