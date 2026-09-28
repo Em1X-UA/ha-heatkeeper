@@ -1,0 +1,266 @@
+# HeatKeeper dashboard (sections view).
+# Add it via Settings -> Dashboards -> Add dashboard -> "New dashboard from scratch",
+# then ⋮ -> Edit -> ⋮ -> Raw configuration editor, and paste this file.
+#
+# Replace:
+#   input_boolean.heating_home  -> your "someone home" day toggle
+#   zone slugs below match zones named Кухня/Вітальня/Офіс/Спальня
+#     (zone entity ids look like sensor.heatkeeper_<zone>_zone_status;
+#      see Settings -> Devices -> <zone name>)
+#   sensor.<zone>_temperature -> your room temperature sensors
+title: Опалення
+views:
+  - title: Опалення
+    path: heating
+    icon: mdi:radiator
+    type: sections
+    max_columns: 3
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: Керування
+            icon: mdi:radiator
+          - type: tile
+            entity: select.heatkeeper_mode
+            grid_options:
+              columns: full
+            features:
+              - type: select-options
+          - type: tile
+            entity: sensor.heatkeeper_status
+          - type: tile
+            entity: binary_sensor.heatkeeper_cheap_tariff
+          - type: heading
+            heading: Разовий нагрів
+            heading_style: subtitle
+          - type: tile
+            entity: number.heatkeeper_boost_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: button.heatkeeper_boost
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.heatkeeper_boost
+          - type: tile
+            entity: button.heatkeeper_boost_cancel
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.heatkeeper_boost_cancel
+
+      - type: grid
+        visibility:
+          - condition: state
+            entity: select.heatkeeper_mode
+            state: maintain
+        cards:
+          - type: heading
+            heading: Режим 1 · Підтримання
+          - type: tile
+            entity: number.heatkeeper_maintain_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_delta
+            features:
+              - type: numeric-input
+                style: buttons
+
+      - type: grid
+        visibility:
+          - condition: state
+            entity: select.heatkeeper_mode
+            state:
+              - tariff
+              - tariff_outage
+        cards:
+          - type: heading
+            heading: Тариф · ніч
+            icon: mdi:weather-night
+          - type: tile
+            entity: time.heatkeeper_cheap_start
+          - type: tile
+            entity: time.heatkeeper_cheap_end
+          - type: tile
+            entity: number.heatkeeper_night_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_preheat_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_preheat_lead
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: heading
+            heading: Тариф · день
+            icon: mdi:weather-sunny
+          - type: tile
+            entity: input_boolean.heating_home
+            name: Хтось вдома
+            features:
+              - type: toggle
+          - type: tile
+            entity: number.heatkeeper_day_home_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_day_away_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_delta
+            features:
+              - type: numeric-input
+                style: buttons
+
+      - type: grid
+        visibility:
+          - condition: state
+            entity: select.heatkeeper_mode
+            state: tariff_outage
+        cards:
+          - type: heading
+            heading: Відключення світла
+            icon: mdi:transmission-tower
+          - type: tile
+            entity: binary_sensor.heatkeeper_grid
+          - type: tile
+            entity: sensor.heatkeeper_restore_at
+          - type: tile
+            entity: switch.heatkeeper_auto_restore
+            features:
+              - type: toggle
+          - type: tile
+            entity: number.heatkeeper_outage_target
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_restore_delay
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: number.heatkeeper_restore_stagger
+            features:
+              - type: numeric-input
+                style: buttons
+          - type: tile
+            entity: button.heatkeeper_resume
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.heatkeeper_resume
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Зони
+            icon: mdi:home-thermometer
+          - type: entities
+            title: Вітальня
+            state_color: true
+            entities:
+              - entity: sensor.vitalnia_temperature
+                name: Температура
+              - entity: sensor.heatkeeper_vitalnia_zone_status
+                name: Стан
+              - entity: sensor.heatkeeper_vitalnia_zone_target
+                name: Ціль
+              - entity: switch.heatkeeper_vitalnia_enabled
+                name: Керування
+              - entity: number.heatkeeper_vitalnia_offset
+                name: Корекція
+              - type: button
+                entity: button.heatkeeper_vitalnia_boost
+                name: Разовий нагрів
+                action_name: Нагріти
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.heatkeeper_vitalnia_boost
+          - type: entities
+            title: Спальня
+            state_color: true
+            entities:
+              - entity: sensor.spalnia_temperature
+                name: Температура
+              - entity: sensor.heatkeeper_spalnia_zone_status
+                name: Стан
+              - entity: sensor.heatkeeper_spalnia_zone_target
+                name: Ціль
+              - entity: switch.heatkeeper_spalnia_enabled
+                name: Керування
+              - entity: number.heatkeeper_spalnia_offset
+                name: Корекція
+              - type: button
+                entity: button.heatkeeper_spalnia_boost
+                name: Разовий нагрів
+                action_name: Нагріти
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.heatkeeper_spalnia_boost
+          - type: entities
+            title: Офіс
+            state_color: true
+            entities:
+              - entity: sensor.ofis_temperature
+                name: Температура
+              - entity: sensor.heatkeeper_ofis_zone_status
+                name: Стан
+              - entity: sensor.heatkeeper_ofis_zone_target
+                name: Ціль
+              - entity: switch.heatkeeper_ofis_enabled
+                name: Керування
+              - entity: number.heatkeeper_ofis_offset
+                name: Корекція
+              - type: button
+                entity: button.heatkeeper_ofis_boost
+                name: Разовий нагрів
+                action_name: Нагріти
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.heatkeeper_ofis_boost
+          - type: entities
+            title: Кухня
+            state_color: true
+            entities:
+              - entity: sensor.kukhnia_temperature
+                name: Температура
+              - entity: sensor.heatkeeper_kukhnia_zone_status
+                name: Стан
+              - entity: sensor.heatkeeper_kukhnia_zone_target
+                name: Ціль
+              - entity: switch.heatkeeper_kukhnia_enabled
+                name: Керування
+              - entity: number.heatkeeper_kukhnia_offset
+                name: Корекція
+              - type: button
+                entity: button.heatkeeper_kukhnia_boost
+                name: Разовий нагрів
+                action_name: Нагріти
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.heatkeeper_kukhnia_boost

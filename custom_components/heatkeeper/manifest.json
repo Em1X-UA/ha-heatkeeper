@@ -1,0 +1,13 @@
+{
+  "domain": "heatkeeper",
+  "name": "HeatKeeper",
+  "codeowners": ["@Em1X-UA"],
+  "config_flow": true,
+  "documentation": "https://github.com/Em1X-UA/ha-heatkeeper",
+  "integration_type": "hub",
+  "iot_class": "calculated",
+  "issue_tracker": "https://github.com/Em1X-UA/ha-heatkeeper/issues",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "0.1.0"
+}
