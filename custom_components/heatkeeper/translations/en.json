@@ -13,7 +13,7 @@
         },
         "data_description": {
           "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
-          "tariff_cheap_states": "Comma separated, e.g. `on` or `T2, night`.",
+          "tariff_cheap_states": "Comma separated, e.g. `offpeak` or `on`.",
           "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
           "grid_on_states": "Comma separated, usually `on`.",
           "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."
@@ -62,7 +62,7 @@
         },
         "data_description": {
           "tariff_entity": "If empty, the cheap zone is taken from the 'Cheap tariff start/end' times.",
-          "tariff_cheap_states": "Comma separated, e.g. `on` or `T2, night`.",
+          "tariff_cheap_states": "Comma separated, e.g. `offpeak` or `on`.",
           "grid_entity": "Used only in mode 3. Unavailable sensor = no power.",
           "grid_on_states": "Comma separated, usually `on`.",
           "day_toggle_entity": "On = 'home' day target, off = 'away' day target. HeatKeeper only reads it."

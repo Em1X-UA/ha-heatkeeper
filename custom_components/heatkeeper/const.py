@@ -23,7 +23,7 @@ CONF_ZONE_HEATER: Final = "heater"
 CONF_ZONE_TEMPERATURE: Final = "temperature"
 CONF_ZONE_HUMIDITY: Final = "humidity"
 
-DEFAULT_TARIFF_CHEAP_STATES: Final = "on"
+DEFAULT_TARIFF_CHEAP_STATES: Final = "on, offpeak"
 DEFAULT_GRID_ON_STATES: Final = "on"
 
 # Operating modes.

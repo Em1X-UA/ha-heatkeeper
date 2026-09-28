@@ -4,7 +4,7 @@
 #
 # Replace:
 #   input_boolean.heating_home  -> your "someone home" day toggle
-#   vitalnia/spalnia/ditiacha/kukhnia -> your zone slugs
+#   zone slugs below match zones named Кухня/Вітальня/Офіс/Спальня
 #     (zone entity ids look like sensor.heatkeeper_<zone>_zone_status;
 #      see Settings -> Devices -> <zone name>)
 #   sensor.<zone>_temperature -> your room temperature sensors
@@ -219,28 +219,28 @@ views:
                   target:
                     entity_id: button.heatkeeper_spalnia_boost
           - type: entities
-            title: Дитяча
+            title: Офіс
             state_color: true
             entities:
-              - entity: sensor.ditiacha_temperature
+              - entity: sensor.ofis_temperature
                 name: Температура
-              - entity: sensor.heatkeeper_ditiacha_zone_status
+              - entity: sensor.heatkeeper_ofis_zone_status
                 name: Стан
-              - entity: sensor.heatkeeper_ditiacha_zone_target
+              - entity: sensor.heatkeeper_ofis_zone_target
                 name: Ціль
-              - entity: switch.heatkeeper_ditiacha_enabled
+              - entity: switch.heatkeeper_ofis_enabled
                 name: Керування
-              - entity: number.heatkeeper_ditiacha_offset
+              - entity: number.heatkeeper_ofis_offset
                 name: Корекція
               - type: button
-                entity: button.heatkeeper_ditiacha_boost
+                entity: button.heatkeeper_ofis_boost
                 name: Разовий нагрів
                 action_name: Нагріти
                 tap_action:
                   action: perform-action
                   perform_action: button.press
                   target:
-                    entity_id: button.heatkeeper_ditiacha_boost
+                    entity_id: button.heatkeeper_ofis_boost
           - type: entities
             title: Кухня
             state_color: true

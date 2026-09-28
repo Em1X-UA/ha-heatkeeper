@@ -104,14 +104,14 @@ async def test_mode2_tariff_schedule(hass, entry, calls, freezer) -> None:
 
 async def test_mode2_tariff_entity_overrides_times(hass, entry, calls, freezer) -> None:
     """A configured tariff entity decides the cheap zone."""
-    options = dict(entry.options) | {"tariff_entity": "sensor.tariff", "tariff_cheap_states": "T2"}
-    hass.states.async_set("sensor.tariff", "T1")
+    options = dict(entry.options) | {"tariff_entity": "select.daily_energy"}
+    hass.states.async_set("select.daily_energy", "peak")
     hass.config_entries.async_update_entry(entry, options=options)
     await hass.async_block_till_done()
     await _select(hass, "tariff")
     await _at(hass, freezer, "02:00")
     assert hass.states.get("sensor.heatkeeper_status").state == "day_home"
-    await _set(hass, "sensor.tariff", "T2")
+    await _set(hass, "select.daily_energy", "offpeak")
     assert hass.states.get("sensor.heatkeeper_status").state == "night"
 
 
