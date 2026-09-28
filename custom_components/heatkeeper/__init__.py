@@ -2,13 +2,24 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import device_registry as dr
+from homeassistant.helpers import (
+    config_validation as cv,
+)
+from homeassistant.helpers import (
+    device_registry as dr,
+)
+from homeassistant.helpers import (
+    entity_registry as er,
+)
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN, STORAGE_VERSION
+from .const import CARD_URL, DOMAIN, STORAGE_VERSION, VERSION
 from .controller import HeatKeeperController
 
 PLATFORMS: list[Platform] = [
@@ -23,6 +34,25 @@ PLATFORMS: list[Platform] = [
 
 type HeatKeeperConfigEntry = ConfigEntry[HeatKeeperController]
 
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+CARD_FILE = Path(__file__).parent / "frontend" / "heatkeeper-room-card.js"
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Serve the room card and load it in every dashboard."""
+    if hass.http is None:  # e.g. in tests without the HTTP server
+        return True
+    from homeassistant.components.http import StaticPathConfig
+
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(CARD_URL, str(CARD_FILE), cache_headers=False)]
+    )
+    if "frontend" in hass.config.components:
+        from homeassistant.components.frontend import add_extra_js_url
+
+        add_extra_js_url(hass, f"{CARD_URL}?v={VERSION}")
+    return True
+
 
 async def async_setup_entry(hass: HomeAssistant, entry: HeatKeeperConfigEntry) -> bool:
     """Set up HeatKeeper from a config entry."""
@@ -32,6 +62,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: HeatKeeperConfigEntry) -
     _remove_stale_zone_devices(hass, entry, controller)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    _remove_stale_entities(hass, entry, controller)
     controller.async_start()
     entry.async_on_unload(entry.add_update_listener(_async_update_listener))
     return True
@@ -66,3 +97,13 @@ def _remove_stale_zone_devices(
     for device in dr.async_entries_for_config_entry(registry, entry.entry_id):
         if not device.identifiers & valid:
             registry.async_remove_device(device.id)
+
+
+def _remove_stale_entities(
+    hass: HomeAssistant, entry: ConfigEntry, controller: HeatKeeperController
+) -> None:
+    """Remove entities from older versions (e.g. global targets, old buttons)."""
+    registry = er.async_get(hass)
+    for entity in er.async_entries_for_config_entry(registry, entry.entry_id):
+        if (entity.domain, entity.unique_id) not in controller.unique_ids:
+            registry.async_remove(entity.entity_id)

@@ -53,7 +53,9 @@ class StatusSensor(HeatKeeperEntity, SensorEntity):
             "cheap_tariff": c.cheap,
             "grid_ok": c.grid_ok,
             "phase": c.phase,
-            "heating_zones": [z.name for z in c.zones.values() if z.status in ("heating", "boost")],
+            "heating_zones": [
+                z.name for z in c.zones.values() if z.status in ("heating", "boost")
+            ],
         }
 
 
@@ -85,13 +87,23 @@ class ZoneStatusSensor(HeatKeeperEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
-        """Extra details."""
+        """Details used by the HeatKeeper room card."""
+        zone = self._zone
+        ids = zone.entity_ids
         return {
-            "current_temperature": self._zone.current_temperature,
-            "target_temperature": self._zone.target,
-            "heater": self._zone.heater,
-            "temperature_sensor": self._zone.temperature_entity,
-            "humidity_sensor": self._zone.humidity_entity,
+            "zone_name": zone.name,
+            "current_temperature": zone.current_temperature,
+            "current_humidity": self._controller.read_float(zone.humidity_entity),
+            "target_temperature": zone.target,
+            "boost": zone.boost,
+            "heater": zone.heater,
+            "temperature_sensor": zone.temperature_entity,
+            "humidity_sensor": zone.humidity_entity,
+            "boost_entity": ids.get("switch.boost"),
+            "presence_entity": ids.get("switch.presence")
+            or self._controller.global_presence_entity,
+            "day_heating_entity": ids.get("switch.day_heating"),
+            "target_entity": ids.get("sensor.zone_target"),
         }
 
 

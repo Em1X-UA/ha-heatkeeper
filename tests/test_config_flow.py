@@ -50,7 +50,7 @@ async def test_options_add_and_remove_zone(hass: HomeAssistant, entry) -> None:
         result["flow_id"], {"next_step_id": "add_zone"}
     )
     result = await hass.config_entries.options.async_configure(
-        result["flow_id"], {"name": "Bedroom", "heater": "switch.h3", "temperature": "sensor.t3"}
+        result["flow_id"], {"name": "Bedroom", "heater": "switch.h3", "temperature": "sensor.t3", "own_presence": False}
     )
     assert result["type"] is FlowResultType.CREATE_ENTRY
     await hass.async_block_till_done()
