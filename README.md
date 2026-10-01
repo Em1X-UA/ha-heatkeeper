@@ -1,132 +1,136 @@
-# HeatKeeper для Home Assistant
+# HeatKeeper for Home Assistant
+
+**English** · [Українська](README.uk.md)
 
 ![HeatKeeper](docs/banner.jpg)
 
-Розумне керування електричними обігрівачами, які вмикаються розумними розетками (on/off).
-Кожна кімната — одна розетка й один датчик температури. Інтеграція враховує двозонний тариф,
-присутність людей у кожній кімнаті та відключення світла. Усе налаштовується прямо в UI.
+Smart control of electric heaters switched by smart plugs (on/off).
+Each room has one plug and one temperature sensor. The integration handles a two-zone
+(day/night) tariff, per-room presence and power outages. Everything is configured in the UI.
 
-## Встановлення (HACS)
+## Installation (HACS)
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/Em1X-UA/ha-heatkeeper`, тип **Integration**.
-2. Знайдіть **HeatKeeper** у HACS, встановіть і перезапустіть Home Assistant.
-3. **Налаштування → Пристрої та служби → Додати інтеграцію → HeatKeeper**.
+1. HACS → ⋮ → **Custom repositories** → `https://github.com/Em1X-UA/ha-heatkeeper`, type **Integration**.
+2. Find **HeatKeeper** in HACS, install it and restart Home Assistant.
+3. **Settings → Devices & services → Add integration → HeatKeeper**.
 
-## Налаштування
+## Configuration
 
-**Джерела даних** (усі поля необовʼязкові; змінюються через **HeatKeeper → Налаштувати**):
+**Sources** (all optional; change them later via **HeatKeeper → Configure**):
 
-| Поле | Навіщо |
+| Field | Purpose |
 |---|---|
-| Сутність тарифу | Поточна зона тарифу, напр. `select.daily_energy` зі станами `peak`/`offpeak`. Стани «дешево» вказуються через кому (за замовчуванням `on, offpeak`). Якщо поле порожнє, дешева зона береться з часу «Дешевий тариф: початок/кінець». |
-| Сутність наявності мережі | Будь-яка сутність, яка увімкнена, поки є світло (датчик, розетка тощо). Стан `unavailable` теж означає «світла нема». |
+| Tariff entity | Current tariff zone, e.g. `select.daily_energy` with states `peak`/`offpeak`. List the "cheap" states comma separated (default `on, offpeak`). If empty, the cheap zone comes from the "Cheap tariff: start/end" times. |
+| Grid presence entity | Any entity that is on while there is power (a sensor, a plug, …). `unavailable` also counts as "no power". |
 
-**Кімнати.** Для кожної кімнати вказуються назва, розетка, датчик температури, датчик вологості (необовʼязково) і галочка
-**«Кімната має власника»**. Кімната з власником отримує свій перемикач присутності. Кімната без власника
-(кухня, вітальня) дивиться на загальний перемикач «Присутність: хтось вдома».
+**Rooms.** For every room set a name, a heater plug, a temperature sensor, an optional humidity sensor and
+the **"Room has an owner"** checkbox. A room with an owner gets its own presence switch. A room without an owner
+(kitchen, living room) follows the shared "Presence: someone home" switch.
 
-## Режими
+## Modes
 
-| Режим | Поведінка |
+| Mode | Behaviour |
 |---|---|
-| **Вимкнено** | При перемиканні в цей режим вимикає всі обігрівачі й більше їх не чіпає. Разовий нагрів працює. |
-| **Підтримання температури** | Нагрів вмикається при `t ≤ ціль − дельта` і вимикається при `t ≥ ціль + дельта`. |
-| **Двозонний тариф** | Дешева зона: *нічна ціль*. Перед кінцем дешевої зони: *ранковий догрів*. Дорога зона: денна ціль *«вдома»* або *«нікого нема»* залежно від присутності. Якщо в кімнаті вимкнено **«Денне підтримання»**, вдень вона не гріється зовсім, лише вночі. |
-| **Тариф + відключення світла** | Те саме, плюс захист від відключень (див. нижче). |
+| **Off** | Switching to this mode turns all heaters off; after that they are left alone. One-shot heat still works. |
+| **Maintain temperature** | Heating turns on at `t ≤ target − delta` and off at `t ≥ target + delta`. |
+| **Two-zone tariff** | Cheap zone: *night target*. Shortly before the cheap zone ends: *pre-morning boost*. Expensive zone: day target *home* or *away* depending on presence. With **Day heating** off, a room is heated only at night. |
+| **Tariff + outages** | Same, plus power-outage protection (see below). |
 
-Кожна ціль задається **окремо для кожної кімнати**. Дельта (±) спільна.
+Every target is set **per room**. The hysteresis (±) is shared.
 
-> Ранковий догрів рахується від часу «Дешевий тариф: кінець», навіть коли тариф береться з сутності.
-> Виставте там той самий час, коли тариф перемикається на `peak`.
+> The pre-morning boost is counted from "Cheap tariff: end", even when the tariff comes from an entity.
+> Set it to the time your tariff switches to `peak`.
 
-### Присутність
+### Presence
 
-- **У кімнаті з власником** є перемикач «Присутність». Перемикайте його чим завгодно:
-  телефоном, кнопкою, автоматизацією.
-- **«Присутність: хтось вдома»** — загальний перемикач для кімнат без власника.
-- **«Присутність: авто (будь-хто з кімнат)»**, коли увімкнено, робить загальний перемикач
-  «увімкнено», якщо вдома хоч один власник. Ручна зміна загального перемикача вимикає авто.
-- Вночі присутність не впливає ні на що.
+- **A room with an owner** has its own "Presence" switch. Drive it with anything: a phone,
+  a button, an automation.
+- **"Presence: someone home"** is the shared switch for rooms without an owner.
+- **"Presence: auto (any room)"**, when on, makes the shared switch follow "any owner is home".
+  Changing the shared switch by hand turns auto off.
+- Presence has no effect at night.
 
-### Відключення світла (режим «Тариф + відключення»)
+### Power outages ("Tariff + outages" mode)
 
-1. Світло зникло → стан **«Нема світла»**, нагрів заблоковано.
-2. Світло повернулось → усі розетки одразу **вимикаються**: розумні розетки часто самі вмикаються
-   після подачі живлення. Далі йде **затримка після появи світла**.
-3. Після затримки:
-   - **автовідновлення увімкнено** → кімнати стартують по черзі з кроком *«інтервал між кімнатами»*.
-     Кожна спершу гріється до своєї *«Цілі після відключення»* (`0` означає «пропустити»),
-     потім переходить у звичайне підтримання;
-   - **автовідновлення вимкнено** → **пауза**, доки не натиснете **«Відновити опалення»**.
+1. Power is gone → status **Power outage**, heating is blocked.
+2. Power is back → all plugs are switched **off** right away, because smart plugs often turn
+   themselves on after power returns. Then the **delay after power returns** runs.
+3. After the delay:
+   - **auto restore on** → rooms start one by one, spaced by *stagger between rooms*.
+     Each room first heats to its *after-outage target* (`0` = skip), then returns to normal maintenance;
+   - **auto restore off** → **paused** until you press **Resume heating**.
 
-### Разовий нагрів
+### One-shot heat
 
-Перемикач **«Разовий нагрів»** є для кожної кімнати й один для всієї квартири.
+There is a **One-shot heat** switch for every room and one for the whole home.
 
-- **Увімкнули:** кімната гріється до своєї *«Ціль: разовий нагрів»*. Потім обігрівач вимикається,
-  перемикач сам переходить у «вимкнено», а далі працює звичайна логіка режиму.
-- **Вимкнули вручну:** нагрів скасовано.
-- **Присутність** на разовий нагрів не впливає, тож його можна вмикати дистанційно.
-- **Якщо світла нема** (коли налаштована сутність мережі): нагрів стає **«Заплановано»**
-  і стартує після появи світла та затримки.
-- **Якщо світло зникло під час нагріву:** нагрів скасовується.
+- **On:** the room heats to its *Target: one-shot heat*. Then the heater turns off,
+  the switch turns itself off, and the normal mode logic takes over.
+- **Off by hand:** cancels the one-shot heat.
+- **Presence** does not affect one-shot heat, so you can start it remotely.
+- **No power** (with a grid entity configured): the request becomes **Scheduled**
+  and starts after power returns and the delay passes.
+- **Power lost while heating:** the one-shot heat is cancelled.
 
-## Картка кімнати
+## Room card
 
-Інтеграція сама додає картку **HeatKeeper: кімната** до всіх дашбордів:
-**Редагувати дашборд → Додати картку → HeatKeeper: кімната**.
+The integration adds the **HeatKeeper: room** card to every dashboard:
+**Edit dashboard → Add card → HeatKeeper: room**.
+If it is not in the list, reload the page bypassing the cache (Ctrl+Shift+R; in the mobile app:
+Settings → Companion app → Reset frontend cache).
 
-- Показує стан кімнати й поточну ціль, наприклад «Гріє · 21.0°».
-- Опційно показує температуру, вологість і перемикач присутності.
-- **Натискання** відкриває деталі, **утримання** вмикає або вимикає разовий нагрів.
+- Shows the room status and current target, e.g. "Heating · 21.0°".
+- Optionally shows temperature, humidity and the presence switch.
+- **Tap** opens the details, **hold** toggles one-shot heat.
 
 ```yaml
 type: custom:heatkeeper-room-card
-entity: sensor.heatkeeper_ofis_zone_status
+entity: sensor.heatkeeper_office_zone_status
 show_temperature: false
 show_humidity: false
 show_presence: true
 ```
 
-Приклад цілого дашборду: [`dashboards/heatkeeper.yaml`](dashboards/heatkeeper.yaml).
+Full dashboard example: [`dashboards/heatkeeper.yaml`](dashboards/heatkeeper.yaml).
 
-## Сутності
+## Entities
 
-Entity id не залежать від мови. `<кімната>` — транслітерована назва (Офіс → `ofis`, Кухня → `kukhnia`).
+Entity ids do not depend on the UI language. `<room>` is the room name as a slug
+(Office → `office`, Кухня → `kukhnia`).
 
-**HeatKeeper (загальні):**
+**HeatKeeper (global):**
 
-| Сутність | Опис |
+| Entity | Description |
 |---|---|
-| `select.heatkeeper_mode` | Режим |
-| `switch.heatkeeper_presence`, `switch.heatkeeper_presence_auto` | Присутність: хтось вдома / авто |
-| `switch.heatkeeper_boost` | Разовий нагрів усієї квартири |
-| `button.heatkeeper_resume` | Відновити опалення після відключення |
-| `number.heatkeeper_delta` | Дельта (±) |
-| `time.heatkeeper_cheap_start`, `time.heatkeeper_cheap_end`, `number.heatkeeper_preheat_lead` | Дешевий тариф: початок, кінець, догрів перед кінцем |
-| `switch.heatkeeper_auto_restore`, `number.heatkeeper_restore_delay`, `number.heatkeeper_restore_stagger` | Відключення: автовідновлення, затримка, інтервал |
-| `sensor.heatkeeper_status`, `binary_sensor.heatkeeper_cheap_tariff`, `binary_sensor.heatkeeper_grid`, `sensor.heatkeeper_restore_at` | Стан |
+| `select.heatkeeper_mode` | Mode |
+| `switch.heatkeeper_presence`, `switch.heatkeeper_presence_auto` | Presence: someone home / auto |
+| `switch.heatkeeper_boost` | One-shot heat for the whole home |
+| `button.heatkeeper_resume` | Resume heating after an outage |
+| `number.heatkeeper_delta` | Hysteresis (±) |
+| `time.heatkeeper_cheap_start`, `time.heatkeeper_cheap_end`, `number.heatkeeper_preheat_lead` | Cheap tariff: start, end, boost before end |
+| `switch.heatkeeper_auto_restore`, `number.heatkeeper_restore_delay`, `number.heatkeeper_restore_stagger` | Outage: auto restore, delay, stagger |
+| `sensor.heatkeeper_status`, `binary_sensor.heatkeeper_cheap_tariff`, `binary_sensor.heatkeeper_grid`, `sensor.heatkeeper_restore_at` | Status |
 
-**Кожна кімната:**
+**Each room:**
 
-| Сутність | Опис |
+| Entity | Description |
 |---|---|
-| `switch.heatkeeper_<кімната>_enabled` | Керування кімнатою увімкнено |
-| `switch.heatkeeper_<кімната>_presence` | Присутність (лише кімнати з власником) |
-| `switch.heatkeeper_<кімната>_day_heating` | Денне підтримання |
-| `switch.heatkeeper_<кімната>_boost` | Разовий нагрів |
-| `number.heatkeeper_<кімната>_…_target` | Цілі: підтримання, ніч, догрів, день вдома/нікого, разовий нагрів, після відключення |
-| `sensor.heatkeeper_<кімната>_zone_status`, `sensor.heatkeeper_<кімната>_zone_target` | Стан і поточна ціль |
+| `switch.heatkeeper_<room>_enabled` | Control enabled |
+| `switch.heatkeeper_<room>_presence` | Presence (rooms with an owner only) |
+| `switch.heatkeeper_<room>_day_heating` | Day heating |
+| `switch.heatkeeper_<room>_boost` | One-shot heat |
+| `number.heatkeeper_<room>_…_target` | Targets: maintain, night, pre-morning boost, day home/away, one-shot heat, after outage |
+| `sensor.heatkeeper_<room>_zone_status`, `sensor.heatkeeper_<room>_zone_target` | Status and current target |
 
-Налаштування зберігаються між перезапусками HA.
+Settings survive Home Assistant restarts.
 
-## Приклади автоматизацій
+## Automation examples
 
-**Телефон → присутність кімнати:**
+**Phone → room presence:**
 
 ```yaml
 automation:
-  - alias: Офіс — присутність
+  - alias: Office presence
     triggers:
       - trigger: state
         entity_id: person.me
@@ -134,14 +138,14 @@ automation:
       - action: >-
           switch.turn_{{ 'on' if trigger.to_state.state == 'home' else 'off' }}
         target:
-          entity_id: switch.heatkeeper_ofis_presence
+          entity_id: switch.heatkeeper_office_presence
 ```
 
-**Zigbee-кнопка → разовий нагрів кімнати** (приклад для Zigbee2MQTT):
+**Zigbee button → one-shot heat** (Zigbee2MQTT example):
 
 ```yaml
 automation:
-  - alias: Спальня — кнопка прогріву
+  - alias: Bedroom heat button
     triggers:
       - trigger: state
         entity_id: event.bedroom_button_action
@@ -150,10 +154,10 @@ automation:
     actions:
       - action: switch.toggle
         target:
-          entity_id: switch.heatkeeper_spalnia_boost
+          entity_id: switch.heatkeeper_bedroom_boost
 ```
 
-## Безпека
+## Safety
 
-- Якщо датчик температури недоступний, обігрівач кімнати вимикається: наосліп інтеграція не гріє.
-- Якщо розетка недоступна, команди їй не надсилаються.
+- If a temperature sensor is unavailable, the room heater is switched off: HeatKeeper never heats blind.
+- No commands are sent to an unavailable plug.

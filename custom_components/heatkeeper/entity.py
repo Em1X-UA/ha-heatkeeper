@@ -21,17 +21,27 @@ def main_device_info(controller: HeatKeeperController) -> DeviceInfo:
     )
 
 
+# Newer HA links child devices by device id; `via_device` is deprecated there
+# but older versions only understand `via_device`.
+VIA_DEVICE_ID_SUPPORTED = "via_device_id" in DeviceInfo.__annotations__
+
+
 def zone_device_info(controller: HeatKeeperController, zone: Zone) -> DeviceInfo:
     """Device for a single zone, linked to the main device."""
-    return DeviceInfo(
+    info = DeviceInfo(
         identifiers={(DOMAIN, f"{controller.entry.entry_id}_{zone.id}")},
         name=zone.name,
         manufacturer="HeatKeeper",
         model="Heating zone",
         suggested_area=zone.name,
-        via_device=(DOMAIN, controller.entry.entry_id),
         entry_type=DeviceEntryType.SERVICE,
     )
+    if VIA_DEVICE_ID_SUPPORTED:
+        if controller.main_device_id:
+            info["via_device_id"] = controller.main_device_id  # type: ignore[typeddict-unknown-key]
+    else:
+        info["via_device"] = (DOMAIN, controller.entry.entry_id)  # type: ignore[typeddict-unknown-key]
+    return info
 
 
 class HeatKeeperEntity(Entity):
