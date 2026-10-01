@@ -21,6 +21,7 @@ from homeassistant.helpers.typing import ConfigType
 
 from .const import CARD_URL, DOMAIN, STORAGE_VERSION, VERSION
 from .controller import HeatKeeperController
+from .entity import main_device_info
 
 PLATFORMS: list[Platform] = [
     Platform.BINARY_SENSOR,
@@ -59,6 +60,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: HeatKeeperConfigEntry) -
     controller = HeatKeeperController(hass, entry)
     await controller.async_load()
     entry.runtime_data = controller
+    # Register the main device first so room devices can link to its id.
+    controller.main_device_id = (
+        dr.async_get(hass)
+        .async_get_or_create(
+            config_entry_id=entry.entry_id, **main_device_info(controller)
+        )
+        .id
+    )
     _remove_stale_zone_devices(hass, entry, controller)
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)

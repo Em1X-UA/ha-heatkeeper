@@ -207,6 +207,8 @@ class HeatKeeperController:
         self.unique_ids: set[tuple[str, str]] = set()
         # Entity id of the global presence switch (set when it is added).
         self.global_presence_entity: str | None = None
+        # Device registry id of the main HeatKeeper device (set on setup).
+        self.main_device_id: str | None = None
 
         # Runtime state.
         self.status: str = STATUS_OFF
