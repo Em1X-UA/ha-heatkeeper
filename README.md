@@ -74,8 +74,10 @@ There is a **One-shot heat** switch for every room and one for the whole home.
 
 ## Room card
 
-The integration adds the **HeatKeeper: room** card to every dashboard:
-**Edit dashboard → Add card → HeatKeeper: room**.
+The integration adds the **HeatKeeper: room** card to every dashboard
+(it registers itself as a dashboard resource, so it loads before the view is built):
+**Edit dashboard → Add card → HeatKeeper: room**. With YAML-mode dashboards, add the resource
+yourself: `/heatkeeper_static/heatkeeper-room-card.js`, type `module`.
 If it is not in the list, reload the page bypassing the cache (Ctrl+Shift+R; in the mobile app:
 Settings → Companion app → Reset frontend cache).
 

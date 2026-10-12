@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 from homeassistant.config_entries import ConfigEntry
@@ -16,6 +17,7 @@ from homeassistant.helpers import (
 from homeassistant.helpers import (
     entity_registry as er,
 )
+from homeassistant.helpers.start import async_at_started
 from homeassistant.helpers.storage import Store
 from homeassistant.helpers.typing import ConfigType
 
@@ -36,11 +38,12 @@ PLATFORMS: list[Platform] = [
 type HeatKeeperConfigEntry = ConfigEntry[HeatKeeperController]
 
 CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+_LOGGER = logging.getLogger(__name__)
 CARD_FILE = Path(__file__).parent / "frontend" / "heatkeeper-room-card.js"
 
 
 async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
-    """Serve the room card and load it in every dashboard."""
+    """Serve the room card and make every dashboard load it."""
     if hass.http is None:  # e.g. in tests without the HTTP server
         return True
     from homeassistant.components.http import StaticPathConfig
@@ -48,10 +51,54 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     await hass.http.async_register_static_paths(
         [StaticPathConfig(CARD_URL, str(CARD_FILE), cache_headers=False)]
     )
+
+    async def _register(_: HomeAssistant | None = None) -> None:
+        if not await _async_register_card_resource(hass):
+            _add_card_extra_js(hass)
+
+    # Lovelace is fully set up only once HA has started.
+    async_at_started(hass, _register)
+    return True
+
+
+def _add_card_extra_js(hass: HomeAssistant) -> None:
+    """Fallback: inject the card script into every page (not awaited by dashboards)."""
     if "frontend" in hass.config.components:
         from homeassistant.components.frontend import add_extra_js_url
 
         add_extra_js_url(hass, f"{CARD_URL}?v={VERSION}")
+
+
+async def _async_register_card_resource(hass: HomeAssistant) -> bool:
+    """Register the card as a Lovelace module resource.
+
+    Dashboards wait for resources before rendering, so the card always exists
+    when a view is built. A script added with add_extra_js_url is not awaited:
+    on a slow connection (a phone) the view can be built first and show
+    "Custom element doesn't exist". Returns False when resources cannot be
+    managed (YAML mode), so the caller can fall back to extra JS.
+    """
+    url = f"{CARD_URL}?v={VERSION}"
+    try:
+        lovelace = hass.data.get("lovelace")
+        resources = getattr(lovelace, "resources", None)
+        if resources is None or not hasattr(resources, "async_create_item"):
+            return False
+        if not getattr(resources, "loaded", True):
+            await resources.async_load()
+            resources.loaded = True
+        for item in resources.async_items():
+            if str(item["url"]).split("?")[0] != CARD_URL:
+                continue
+            if item["url"] != url:
+                await resources.async_update_item(
+                    item["id"], {"res_type": "module", "url": url}
+                )
+            return True
+        await resources.async_create_item({"res_type": "module", "url": url})
+    except Exception:  # noqa: BLE001 - never break setup over a dashboard resource
+        _LOGGER.debug("Could not register the room card resource", exc_info=True)
+        return False
     return True
 
 
