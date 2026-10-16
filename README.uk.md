@@ -10,7 +10,7 @@
 
 ## Встановлення (HACS)
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/Em1X-UA/ha-heatkeeper`, тип **Integration**.
+1. HACS → ⋮ → **Custom repositories** → `https://github.com/em1x-dev/ha-heatkeeper`, тип **Integration**.
 2. Знайдіть **HeatKeeper** у HACS, встановіть і перезапустіть Home Assistant.
 3. **Налаштування → Пристрої та служби → Додати інтеграцію → HeatKeeper**.
 
