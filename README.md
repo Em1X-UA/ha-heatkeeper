@@ -10,7 +10,7 @@ Each room has one plug and one temperature sensor. The integration handles a two
 
 ## Installation (HACS)
 
-1. HACS → ⋮ → **Custom repositories** → `https://github.com/Em1X-UA/ha-heatkeeper`, type **Integration**.
+1. HACS → ⋮ → **Custom repositories** → `https://github.com/em1x-dev/ha-heatkeeper`, type **Integration**.
 2. Find **HeatKeeper** in HACS, install it and restart Home Assistant.
 3. **Settings → Devices & services → Add integration → HeatKeeper**.
 
